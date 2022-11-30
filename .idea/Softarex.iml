@@ -11,6 +11,9 @@
       <excludeFolder url="file://$MODULE_DIR$/old_dataset_nn" />
       <excludeFolder url="file://$MODULE_DIR$/test_model" />
       <excludeFolder url="file://$MODULE_DIR$/challenges-in-representation-learning-facial-expression-recognition-challenge" />
+      <excludeFolder url="file://$MODULE_DIR$/no_dropout" />
+      <excludeFolder url="file://$MODULE_DIR$/logs" />
+      <excludeFolder url="file://$MODULE_DIR$/new2_sgd" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

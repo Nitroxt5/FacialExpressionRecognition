@@ -158,5 +158,9 @@ cython_debug/
 /old_dataset_nn/
 /test_model/
 /log.log
+/training.log
 /challenges-in-representation-learning-facial-expression-recognition-challenge/
 *.csv
+/no_dropout/
+/logs/
+/new2_sgd/
