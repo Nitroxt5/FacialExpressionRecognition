@@ -1,8 +1,9 @@
 import tensorflow as tf
 from tensorflow import keras
-from keras import layers, backend as K
+from keras import layers
+from keras.utils import plot_model
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, f1_score, precision_score, recall_score, accuracy_score, balanced_accuracy_score
 
 
 class ResNet:
@@ -12,7 +13,7 @@ class ResNet:
         self._test = test_data
         self._input_shape = input_shape
         self._callbacks = [keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=15, verbose=1),
-                           keras.callbacks.ModelCheckpoint(filepath='new2_4/model_{epoch}', save_best_only=True,
+                           keras.callbacks.ModelCheckpoint(filepath='cleared_3/model_{epoch}', save_best_only=True,
                                                            verbose=1, monitor='val_accuracy')]
         self._labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
         self._model = self._create_model()
@@ -50,35 +51,27 @@ class ResNet:
     def summary(self):
         self._model.summary()
 
-    @staticmethod
-    def f1_score(y_true, y_pred):
-        def recall_m():
-            TP = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-            Positives = K.sum(K.round(K.clip(y_true, 0, 1)))
-            return TP / (Positives + K.epsilon())
-
-        def precision_m():
-            TP = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-            Pred_Positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
-            return TP / (Pred_Positives + K.epsilon())
-
-        precision, recall = precision_m(), recall_m()
-
-        return 2 * ((precision * recall) / (precision + recall + K.epsilon()))
-
     def compile(self):
         opt = keras.optimizers.Adam(learning_rate=0.0001)
         # opt = keras.optimizers.SGD(learning_rate=0.0001)
         loss = 'categorical_crossentropy'
-        metrics = ['accuracy', self.f1_score, keras.metrics.Precision(), keras.metrics.Recall()]
+        metrics = ['accuracy']
         self._model.compile(optimizer=opt, loss=loss, metrics=metrics)
 
     def fit(self):
-        return self._model.fit(self._train[0], self._train[1], batch_size=64, epochs=300,
+        return self._model.fit(self._train[0], self._train[1], batch_size=32, epochs=100,
                                validation_data=self._val, callbacks=self._callbacks)
 
     def evaluate(self):
-        return self._model.evaluate(self._test[0], self._test[1])
+        prediction = tf.argmax(self._model.predict(self._test[0]), axis=-1)
+        real = tf.argmax(self._test[1], axis=-1)
+        precision = precision_score(real, prediction, average='weighted')
+        recall = recall_score(real, prediction, average='weighted')
+        f1score = f1_score(real, prediction, average='weighted')
+        accuracy = accuracy_score(real, prediction)
+        bal_accuracy = balanced_accuracy_score(real, prediction)
+        return self._model.evaluate(self._test[0], self._test[1]),\
+               {'precision': precision, 'recall': recall, 'f1_score': f1score, 'acc': accuracy, 'bal_acc': bal_accuracy}
 
     def save(self):
         self._model.save('test_model')
@@ -94,3 +87,6 @@ class ResNet:
         plt.show()
 
         return result
+
+    def plot_model(self):
+        plot_model(self._model, to_file='model.png', show_layer_names=False, show_layer_activations=True, show_shapes=True)
